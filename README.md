@@ -13,6 +13,7 @@
 </div>
 
 ---
+live demo: https://notesrag-abxumnubqxxnybpnzindtv.streamlit.app/
 
 A local **Retrieval-Augmented Generation (RAG)** app. Drop your PDFs in a folder, index them once, and ask questions. Answers come **only** from your documents, with clickable sources, similarity scores, and a visual map of how your question relates to the retrieved passages.
 
