@@ -1,0 +1,74 @@
+[
+  {
+    "question": "What is the condition that allows us to compute the optimal policy using the formula π(s) = argmaxa Q(s,a)?",
+    "expected_source": "DL.pdf"
+  },
+  {
+    "question": "What is the relationship between the loss function and the likelihood of the data in the context of cross-entropy?",
+    "expected_source": "DL.pdf"
+  },
+  {
+    "question": "What are some of the key factors that have contributed to the exponential growth of network size and training data?",
+    "expected_source": "DL.pdf"
+  },
+  {
+    "question": "What is the scope of the stack being described?",
+    "expected_source": "ELOTMANI_NAJAT_DataScience_CaseNotes_CognitiveClass.pdf.pdf"
+  },
+  {
+    "question": "What specific steps are involved in the Data Preparation phase of the data modeling process?",
+    "expected_source": "ELOTMANI_NAJAT_DataScience_CaseNotes_CognitiveClass.pdf.pdf"
+  },
+  {
+    "question": "What is the primary goal of the initial phase of the Data Science Methodology?",
+    "expected_source": "ELOTMANI_NAJAT_DataScience_CaseNotes_CognitiveClass.pdf.pdf"
+  },
+  {
+    "question": "What types of data graphics are most suitable for different audiences and types of data?",
+    "expected_source": "L-0017403161-pdf.pdf"
+  },
+  {
+    "question": "What are some key resources available for data scientists to access and utilize open data?",
+    "expected_source": "L-0017403161-pdf.pdf"
+  },
+  {
+    "question": "How does data science apply to improving business operations?",
+    "expected_source": "L-0017403161-pdf.pdf"
+  },
+  {
+    "question": "How does cross-validation help in choosing the optimal capacity for a model?",
+    "expected_source": "ML_basics_lecture6_overfitting.pdf"
+  },
+  {
+    "question": "What is the main goal of an optimization algorithm in machine learning?",
+    "expected_source": "ML_basics_lecture6_overfitting.pdf"
+  },
+  {
+    "question": "What are the main factors that contribute to overfitting in machine learning models?",
+    "expected_source": "ML_basics_lecture6_overfitting.pdf"
+  },
+  {
+    "question": "What challenges are you likely to face when starting this new role?",
+    "expected_source": "Préparation entretien PFE – 40 questions FR EN.pdf"
+  },
+  {
+    "question": "What specific skills or expertise is the student looking to apply in their proposed Data Science internship?",
+    "expected_source": "Préparation entretien PFE – 40 questions FR EN.pdf"
+  },
+  {
+    "question": "What type of project is the student working on as part of their PFE (Diplôme d'Ingénieur)?",
+    "expected_source": "Préparation entretien PFE – 40 questions FR EN.pdf"
+  },
+  {
+    "question": "How does using async/await allow a single process to handle multiple waiting tasks without blocking?",
+    "expected_source": "Technical CV Analysis & Learning Guide — Najat El Otmani (1).pdf"
+  },
+  {
+    "question": "What is the recommended approach for tuning models on tabular problems?",
+    "expected_source": "Technical CV Analysis & Learning Guide — Najat El Otmani (1).pdf"
+  },
+  {
+    "question": "What are the key factors that influence the performance of a neural network?",
+    "expected_source": "Technical CV Analysis & Learning Guide — Najat El Otmani (1).pdf"
+  }
+]
