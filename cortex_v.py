@@ -1,12 +1,10 @@
 """
-Notes Assistant — a local-first RAG app (Streamlit + ChromaDB + Ollama, with a Groq fallback for the cloud)
+Notes Assistant — a local RAG app (Streamlit + ChromaDB + Ollama)
 
 Run:   streamlit run cortex_v.py
 Needs: .streamlit/config.toml next to this file (light theme, dark sidebar, hides the Deploy button)
 Index: python build_index.py   (builds notes_rag_200 / _500 / _1000; without them the app uses "notes_rag")
 Eval:  optional eval_set.json -> [{"question": "...", "expected_source": "file.pdf"}, ...]
-LLM:   Ollama if it answers (your laptop); otherwise Groq if GROQ_API_KEY is set
-       (Streamlit Cloud: Manage app -> Settings -> Secrets;  locally: environment variable or .streamlit/secrets.toml)
 """
 
 import os
@@ -35,7 +33,6 @@ from sentence_transformers import SentenceTransformer
 APP_NAME = "Notes Assistant"
 DB_DIR = "./chroma_db"
 OLLAMA_MODEL = "llama3.2"
-GROQ_MODEL = "llama-3.1-8b-instant"  # if Groq says "model not found", pick another at console.groq.com/docs/models
 EMBED_MODEL = "all-MiniLM-L6-v2"
 DEFAULT_COLLECTION = "notes_rag"
 CHUNK_COLLECTIONS = {200: "notes_rag_200", 500: "notes_rag_500", 1000: "notes_rag_1000"}
@@ -208,22 +205,6 @@ def warm_up_llm():
     return True
 
 
-def groq_key():
-    """API key from Streamlit Secrets (cloud) or the GROQ_API_KEY environment variable (local)."""
-    try:
-        key = st.secrets.get("GROQ_API_KEY")
-    except Exception:  # no secrets file locally
-        key = None
-    return key or os.environ.get("GROQ_API_KEY")
-
-
-def backend():
-    """'ollama' if the local server answers, else 'groq' if a key exists, else None."""
-    if ollama_status():
-        return "ollama"
-    return "groq" if groq_key() else None
-
-
 def retrieve(query, coll_name, k):
     model = load_embedder()
     col = get_collection(coll_name)
@@ -265,18 +246,6 @@ def search_query(query, messages):
 
 
 def token_stream(prompt):
-    """Stream the answer from Ollama (local) or, if it is unreachable, from Groq (hosted)."""
-    if backend() == "groq":
-        from groq import Groq  # imported here so the app still runs locally without the package
-
-        stream = Groq(api_key=groq_key()).chat.completions.create(
-            model=GROQ_MODEL, messages=[{"role": "user", "content": prompt}],
-            temperature=0.1, max_tokens=400, stream=True)
-        for chunk in stream:
-            piece = chunk.choices[0].delta.content
-            if piece:
-                yield piece
-        return
     for chunk in ollama.chat(model=OLLAMA_MODEL, messages=[{"role": "user", "content": prompt}], stream=True,
                              keep_alive="30m", options={"temperature": 0.1, "num_ctx": 2048, "num_predict": 400}):
         yield chunk["message"]["content"]
@@ -426,17 +395,12 @@ with st.sidebar:
             unsafe_allow_html=True,
         )
 
-    active = backend()  # "ollama" | "groq" | None
-    if active == "ollama":
+    online = ollama_status()
+    if online:
         warm_up_llm()
-    llm_name, llm_detail = {
-        "ollama": (OLLAMA_MODEL, "Running locally"),
-        "groq": (GROQ_MODEL, "Hosted on Groq"),
-        None: ("No LLM", "Ollama offline · no GROQ_API_KEY"),
-    }[active]
     st.markdown(
-        f'<div class="status"><span class="dot{"" if active else " off"}"></span>'
-        f'<div><b>{llm_name}</b><small>{llm_detail}</small></div></div>',
+        f'<div class="status"><span class="dot{"" if online else " off"}"></span>'
+        f'<div><b>{OLLAMA_MODEL}</b><small>{"Running locally" if online else "Ollama is offline"}</small></div></div>',
         unsafe_allow_html=True,
     )
 
@@ -448,9 +412,6 @@ if query:
     st.session_state.messages.append({"role": "user", "content": query})
 
 if not st.session_state.messages:
-    # The privacy claim must match the backend: with Groq, retrieved passages are sent to a hosted API.
-    mode_n = "100% local" if active == "ollama" else "Cloud LLM"
-    mode_l = f"{OLLAMA_MODEL} · nothing leaves your machine" if active == "ollama" else f"{GROQ_MODEL} via Groq"
     st.markdown(
         f'<div class="hero"><div class="logo">{LOGO_SVG.format(s=28)}</div>'
         f'<div class="title">{APP_NAME}</div>'
@@ -458,7 +419,7 @@ if not st.session_state.messages:
         f'<div class="stats">'
         f'<div class="stat"><div class="n">{len(stats)}</div><div class="l">Documents</div></div>'
         f'<div class="stat"><div class="n">{total_chunks:,}</div><div class="l">Passages indexed</div></div>'
-        f'<div class="stat"><div class="n">{mode_n}</div><div class="l">{mode_l}</div></div>'
+        f'<div class="stat"><div class="n">100% local</div><div class="l">{OLLAMA_MODEL} · nothing leaves your machine</div></div>'
         f'</div><div class="try">Suggested questions</div>',
         unsafe_allow_html=True,
     )
@@ -486,13 +447,10 @@ if query:
                 answer = GUARDRAIL_PHRASE
                 st.markdown(answer)
             else:
-                if active is None:
-                    st.error("No LLM available: start Ollama locally, or set GROQ_API_KEY in Streamlit Secrets.")
-                    st.stop()
                 try:
                     answer = st.write_stream(token_stream(build_prompt(llm_q, r["docs"], r["metas"])))
                 except Exception as e:
-                    st.error(f"LLM error ({active}): {e}")
+                    st.error(f"Ollama error: {e}")
                     st.stop()
             guardrail = GUARDRAIL_PHRASE.lower().rstrip(".") in answer.lower()
             msg = {"role": "assistant", "content": answer, "retrieval": r, "guardrail": guardrail,
